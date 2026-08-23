@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the accompanying paper."
+title: "track-certify: anytime joint certification of causal graphs and unknown intervention targets"
+authors:
+  - name: "The Track-and-Certify authors"
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/OWNER/track-certify"
+preferred-citation:
+  type: article
+  title: "Track-and-Certify: Anytime Joint Certification of Causal Graphs and Unknown Intervention Targets"
+  authors:
+    - name: "The Track-and-Certify authors"
+  year: 2026
+  notes: "Under review. Update this entry (authors, venue, DOI) upon publication."

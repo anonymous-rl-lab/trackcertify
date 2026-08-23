@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "track-certify"
+version = "0.1.0"
+description = "Anytime joint certification of causal graphs and unknown intervention targets: certify-or-refuse sequential experiments with instance-optimal adaptive sampling"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "The Track-and-Certify authors"}]
+keywords = [
+  "causal-discovery", "causal-inference", "experimental-design",
+  "sequential-testing", "e-process", "anytime-valid", "best-arm-identification",
+  "intervention-targets", "fixed-confidence",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Typing :: Typed",
+]
+dependencies = ["numpy>=1.22", "scipy>=1.8"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://pypi.org/project/track-certify/"
+
+[project.scripts]
+track-certify = "track_certify.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+track_certify = ["py.typed"]
