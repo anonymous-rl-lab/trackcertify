@@ -13,12 +13,11 @@ decisions, stopping times, and per-environment counts.
 
 The certifier never receives the true hypothesis, the amplitudes, the
 characteristic time, or the optimal allocation.  Exhausting the predeclared
-cap is a refusal, not a low-confidence answer.  `certified_envelope` either
-returns the explicit threshold-inflation constants for the
-estimated-covariance rule or refuses before any interventional data are
-drawn; that rule is a construction of this package and is not covered by the
-paper's validity theorem, which assumes a known covariance (see
-`track_certify.robust`).
+cap is a refusal, not a low-confidence answer.
+
+The covariance is assumed known and shared, as it is throughout the paper.
+No estimated-covariance mode is offered: the paper establishes no
+anytime-valid extension to an estimated covariance.
 """
 
 from __future__ import annotations
@@ -59,24 +58,6 @@ class StepOutcome:
     @property
     def certificate(self) -> Optional[Hypothesis]:
         return self.decision if (self.stopped and not self.refused) else None
-
-
-@dataclass(frozen=True)
-class Envelope:
-    """Spectral error envelope for an estimated covariance, and the
-    threshold constants it implies.  Not a paper-certified envelope; see
-    `track_certify.robust`."""
-
-    eps: float
-    eta_bar: float
-    beta_scale: float
-    beta_drift: float
-    penalty_dims: int
-    level: float  # the delta/2 at which the mixture runs
-
-
-class Refusal(Exception):
-    """Raised by pre-start feasibility checks."""
 
 
 def build_model(sigma: np.ndarray,
@@ -153,46 +134,6 @@ def build_model(sigma: np.ndarray,
     return model
 
 
-def certified_envelope(n0: int, delta: float, d: int, c_max: float,
-                       gamma: float = 0.3) -> Envelope:
-    """Estimated-covariance envelope constants, or a pre-start `Refusal`.
-
-    x = d log 9 + log(2/(delta/2)), eps0 = 4(sqrt(x/n0) + x/n0); feasible iff
-    eps0 < 1 and sqrt(d) eps <= 2/5; eps = eps0/(1-eps0),
-    eta_bar = c_max sqrt(d) eps; threshold constants
-    beta_scale = (1+gamma)(1+eps), beta_drift = (1+1/gamma) eta_bar^2/2, run
-    at level delta/2 with full-dimension penalty.
-
-    These constants are this package's own construction.  The paper proves
-    anytime validity for a known covariance only; see `track_certify.robust`
-    for what an extension would have to establish.
-    """
-    if not 0 < delta < 1:
-        raise ValueError("delta must lie in (0,1)")
-    if not (isinstance(n0, (int, np.integer)) and n0 >= 1):
-        raise ValueError("n0 must be a positive integer")
-    if not (isinstance(d, (int, np.integer)) and d >= 1):
-        raise ValueError("d must be a positive integer")
-    if not (np.isfinite(c_max) and c_max > 0):
-        raise ValueError("c_max must be a positive finite amplitude bound")
-    if not (np.isfinite(gamma) and gamma > 0):
-        raise ValueError("gamma must be positive and finite")
-    x = d * math.log(9.0) + math.log(2.0 / (delta / 2.0))
-    eps0 = 4.0 * (math.sqrt(x / n0) + x / n0)
-    if eps0 >= 1.0:
-        raise Refusal(f"infeasible envelope: eps0 = {eps0:.3f} >= 1 "
-                      f"(n0 = {n0} too small for delta = {delta}, d = {d})")
-    eps = eps0 / (1.0 - eps0)
-    if math.sqrt(d) * eps > 0.4:
-        raise Refusal(f"infeasible envelope: sqrt(d) eps = "
-                      f"{math.sqrt(d) * eps:.3f} > 2/5")
-    eta_bar = c_max * math.sqrt(d) * eps
-    return Envelope(eps=eps, eta_bar=eta_bar,
-                    beta_scale=(1.0 + gamma) * (1.0 + eps),
-                    beta_drift=(1.0 + 1.0 / gamma) * eta_bar * eta_bar / 2.0,
-                    penalty_dims=d, level=delta / 2.0)
-
-
 class Certifier:
     """Streaming Track-and-Certify.
 
@@ -212,9 +153,7 @@ class Certifier:
                  delta: float, *, cap: int = 100_000, rho: float = 1.0,
                  backend: str = "assignment",
                  sampling_policy: str = "adaptive",
-                 fixed_weights: Optional[Sequence[float]] = None,
-                 penalty_dims: Optional[float] = None,
-                 beta_scale: float = 1.0, beta_drift: float = 0.0) -> None:
+                 fixed_weights: Optional[Sequence[float]] = None) -> None:
         if not 0 < delta < 1:
             raise ValueError("delta must lie in (0,1)")
         if backend not in {"assignment", "enumeration"}:
@@ -236,10 +175,8 @@ class Certifier:
         self._backend = backend
         self._policy = sampling_policy
         self._sigma_inv = np.linalg.inv(model.sigma)
-        self._pdims = (model.dimension - 1.0 if penalty_dims is None
-                       else float(penalty_dims))
-        self._beta_scale = float(beta_scale)
-        self._beta_drift = float(beta_drift)
+        # exact response-subspace projection leaves d-1 residual dimensions
+        self._pdims = model.dimension - 1.0
         if sampling_policy == "uniform":
             self._fixed = np.ones(self._K) / self._K
         elif sampling_policy == "oracle":
@@ -317,8 +254,7 @@ class Certifier:
         z = stopping_alt.cost - incumbent.cost
         penalty = self._pdims / 2.0 * sum(
             np.log1p(c / self._rho) for c in self._counts)
-        boundary = (self._beta_scale * (np.log(1.0 / self._delta) + penalty)
-                    + self._beta_drift * t)
+        boundary = np.log(1.0 / self._delta) + penalty
         if not np.isfinite([z, boundary]).all():
             raise FloatingPointError("non-finite stopping state")
         if z >= boundary:

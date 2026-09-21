@@ -92,11 +92,6 @@ def test_refusals():
         out = cert.observe(rng.normal(size=2))
     assert out.stopped and out.refused and out.certificate is None
 
-    with pytest.raises(tc.Refusal):
-        tc.certified_envelope(n0=200, delta=1e-2, d=3, c_max=1.0)
-    env = tc.certified_envelope(n0=512_000, delta=1e-2, d=3, c_max=1.0)
-    assert env.beta_scale > 1.0 and env.beta_drift > 0.0 and env.penalty_dims == 3
-
     with pytest.raises(ValueError):
         tc.build_model(np.array([[1.0, 2.0], [2.0, 1.0]]),
                        {"G12": (0, 1)})  # not PD
@@ -121,15 +116,6 @@ def test_input_validation():
         tc.build_model(sigma, {})
     with pytest.raises(ValueError):
         tc.build_model(np.zeros((0, 0)), {})
-    # envelope parameter validation: refusals are ValueError, never
-    # ZeroDivisionError or silent acceptance
-    for bad in [dict(n0=0), dict(n0=-5), dict(d=0), dict(c_max=-1.0),
-                dict(c_max=0.0), dict(gamma=0.0), dict(delta=0.0),
-                dict(delta=1.0)]:
-        kw = dict(n0=512_000, delta=1e-2, d=3, c_max=1.0)
-        kw.update(bad)
-        with pytest.raises(ValueError):
-            tc.certified_envelope(**kw)
     # certifier parameter validation
     model = tc.build_model(sigma, {"G12": (0, 1), "G21": (1, 0)})
     for kw in [dict(cap=0), dict(cap=-1), dict(rho=0.0), dict(delta=2.0)]:

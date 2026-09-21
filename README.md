@@ -10,7 +10,7 @@ Install the wheel bundled in this repository. Nothing is fetched from a
 package index, so no account page is involved in getting the code.
 
 ```bash
-python -m pip install ./tools/track_certify-0.1.1-py3-none-any.whl
+python -m pip install ./tools/track_certify-0.2.0-py3-none-any.whl
 track-certify demo
 ```
 
@@ -85,22 +85,6 @@ tax.tax            # kappa_total: how much harder JOINT certification is than
                    # part alone; the two agree when kappa_alloc = 1.
 ```
 
-## Unknown covariance: refuse or proceed, with explicit constants
-
-```python
-obs = collect_observational_samples()          # (n0, d), no interventions
-try:
-    setup = tc.robust_certifier(
-        obs, {"X->Y": (0, 1), "Y->X": (1, 0)},
-        n_environments=2, delta=0.01, c_max=3.0)
-except tc.Refusal as r:
-    print("infeasible for this n0/delta/d/c_max:", r)   # pre-start refusal
-else:
-    cert = setup.certifier    # threshold already carries the envelope
-                              # inflation — nothing calibrated. This path
-                              # carries no validity theorem; see Scope.
-```
-
 ## Benchmark instances with theorem-known difficulty
 
 ```python
@@ -115,8 +99,8 @@ res.tau, res.correct                    # compare against inst.tstar_closed_form
 ```
 
 Run `track-certify demo` for a self-contained certification demo, or
-`track-certify envelope --n0 500000 --delta 0.01 --d 3 --c-max 1.0` to check
-robust-mode feasibility from the command line.
+`track-certify tstar` to report `T*`, the optimal split and the coupling tax
+for a declared instance from the command line.
 
 ## Guarantees, precisely
 
@@ -130,16 +114,12 @@ robust-mode feasibility from the command line.
   `E[tau]/log(1/delta) -> T*` as `delta -> 0` — the change-of-measure lower
   bound for *any* delta-correct procedure, attained. No optimality is claimed
   for any other allocator.
-* **Estimated covariance — no validity theorem.** `robust_certifier` applies
-  an explicit spectral envelope to the estimated covariance and refuses
-  before starting when its feasibility conditions fail. The paper assumes a
-  known common covariance throughout: its supplement lists the conditions an
-  anytime-valid extension would have to supply and states that none of them
-  is established there. Treat this path as a documented construction with an
-  explicit refusal gate, not as a certified one.
-* **Refusal semantics.** A reached cap or an infeasible envelope produces a
-  refusal, never a certificate. There is no procedure here that converts
-  arbitrary data into a certificate.
+* **Known covariance only.** Every guarantee above assumes the shared
+  covariance is known, as the paper does throughout. There is no
+  estimated-covariance entry point; see Scope.
+* **Refusal semantics.** A reached cap produces a refusal, never a
+  certificate. There is no procedure here that converts arbitrary data into
+  a certificate.
 
 **Model scope** (checked where checkable, refused when violated): finite
 declared graph class sharing one positive-definite covariance; mean-shift
@@ -178,10 +158,14 @@ using the code; the manuscript's Section XI has the full list.
   certification. The coupling tax says when the first-order cost of the joint
   problem diverges; it is not a statement about a particular staged procedure
   at a finite budget.
-* The estimated-covariance path carries no validity theorem, as above.
+* The covariance must be known and shared. The paper establishes no
+  anytime-valid extension to an estimated covariance: its supplement lists
+  the four conditions such a theorem would need and states that none of them
+  is established. The package therefore ships no estimated-covariance
+  workflow, and `0.2.0` removed the one earlier versions exposed.
 * Nothing is claimed for stochastic off-target subsets, unrestricted graph
-  search, heterogeneous covariance, or multi-target interventions. `build_model`
-  refuses the classes it can check and says why.
+  search, heterogeneous covariance, or multi-target interventions.
+  `build_model` refuses the classes it can check and says why.
 
 ## License
 

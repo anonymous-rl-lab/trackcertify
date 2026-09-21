@@ -3,7 +3,7 @@ message: "If you use this software, please cite the accompanying paper."
 title: "track-certify: anytime joint certification of causal graphs and unknown intervention targets"
 authors:
   - name: "The Track-and-Certify authors"
-version: 0.1.1
+version: 0.2.0
 license: MIT
 repository-code: "https://anonymous.4open.science/r/trackcertify-06B8/"
 preferred-citation:

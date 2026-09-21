@@ -18,11 +18,30 @@ and the supplement numbers its own results independently.
 | `scalable_instance` | supplement Corollary 1, multiple marginal tasks |
 | `build_model` refusing ray-identical declarations | the class-wide decision-distinctness requirement of the formal model |
 
-## Implemented, backed by no result
+Every public entry point appears in that table. Nothing the package exports
+rests on a result the manuscript does not state.
 
-| Public entry point | Status |
-| --- | --- |
-| `certified_envelope`, `robust_certifier`, `estimate_covariance`, `RobustSetup`, the `track-certify envelope` command | This package's own construction. The paper assumes a known common covariance throughout. Its supplement, "Estimated Covariance: Required Conditions", lists the four things an anytime-valid extension would have to supply at once and states that none of them is established there. The envelope's constants are explicit and its feasibility gate refuses before any interventional data are drawn, but Theorem 1(ii) does not cover the level it runs at. |
+## Removed in 0.2.0: the estimated-covariance path
+
+Up to 0.1.1 the package exported `certified_envelope`, `robust_certifier`,
+`estimate_covariance`, `RobustSetup`, `Envelope`, `Refusal` and a
+`track-certify envelope` command, and described them as implementing a
+"Theorem 4" and a "Corollary 2". The manuscript has neither, at v21 or
+before. It assumes a known common covariance throughout, and its supplement,
+"Estimated Covariance: Required Conditions", lists the four things an
+anytime-valid extension would have to supply at once -- a spectral envelope
+uniform over the candidate response subspaces, an amplitude envelope
+controlling response-direction perturbation, a boundary that survives
+propagating covariance uncertainty through the adaptive e-process, and an
+allocation-game perturbation bound preserving positive separation -- and
+states that none of them is established.
+
+The construction was self-contained and its feasibility gate did refuse
+before drawing interventional data, but the error level it ran at was not
+covered by Theorem 1(ii), so it was removed rather than relabelled. The
+threshold-inflation arguments it fed to `Certifier` (`penalty_dims`,
+`beta_scale`, `beta_drift`) went with it; the vendored simulation driver
+still accepts them, and its defaults reproduce the known-covariance rule.
 
 ## In the paper, not in the package
 

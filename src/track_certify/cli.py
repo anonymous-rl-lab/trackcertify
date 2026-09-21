@@ -1,4 +1,4 @@
-"""Command-line interface: ``track-certify demo | tstar | envelope``."""
+"""Command-line interface: ``track-certify demo | tstar``."""
 
 from __future__ import annotations
 
@@ -74,22 +74,6 @@ def _cmd_tstar(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_envelope(args: argparse.Namespace) -> int:
-    from .api import Refusal, certified_envelope
-
-    try:
-        env = certified_envelope(n0=args.n0, delta=args.delta, d=args.d,
-                                 c_max=args.c_max, gamma=args.gamma)
-    except Refusal as exc:
-        print(f"REFUSAL (pre-start): {exc}")
-        return 1
-    print(f"feasible: eps = {env.eps:.4g}, eta_bar = {env.eta_bar:.4g}")
-    print(f"threshold: beta_scale = {env.beta_scale:.4g}, "
-          f"beta_drift = {env.beta_drift:.4g}/step, "
-          f"penalty dims = {env.penalty_dims}, level = {env.level}")
-    return 0
-
-
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(
         prog="track-certify",
@@ -117,23 +101,11 @@ def main(argv=None) -> int:
     t.add_argument("--allow-indistinct", action="store_true")
     t.set_defaults(func=_cmd_tstar)
 
-    e = sub.add_parser("envelope", help="estimated-covariance envelope "
-                                        "feasibility for (n0, delta, d, "
-                                        "c_max)")
-    e.add_argument("--n0", type=int, required=True)
-    e.add_argument("--delta", type=float, required=True)
-    e.add_argument("--d", type=int, required=True)
-    e.add_argument("--c-max", dest="c_max", type=float, required=True)
-    e.add_argument("--gamma", type=float, default=0.3)
-    e.set_defaults(func=_cmd_envelope)
-
     args = p.parse_args(argv)
     try:
         return args.func(args)
     except Exception as exc:  # clean CLI surface: no tracebacks for bad input
-        from .api import Refusal
-        kind = "REFUSAL" if isinstance(exc, Refusal) else "error"
-        print(f"{kind}: {exc}", file=sys.stderr)
+        print(f"error: {exc}", file=sys.stderr)
         return 2
 
 

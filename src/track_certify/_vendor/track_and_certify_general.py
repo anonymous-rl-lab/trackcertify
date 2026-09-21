@@ -128,8 +128,10 @@ def run_general(
     if not 0 < delta < 1:
         raise ValueError("delta must lie in (0,1)")
 
-    # Estimated-covariance certification parameters (no validity theorem
-    # backs this mode; see track_certify.robust):
+    # Misspecification knobs of the simulation driver.  The package exposes
+    # no entry point that sets them: the paper assumes a known covariance and
+    # establishes no anytime-valid extension to an estimated one.  The
+    # defaults below reproduce the known-covariance rule exactly.
     #   truth_model  -- model generating the DATA (true covariance and rays);
     #                   decisions, rays, whitening, and statistics still come
     #                   from `model`. Defaults to `model` (well-specified case).
