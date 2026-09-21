@@ -2,7 +2,8 @@
 
 `track_certify-0.1.1-py3-none-any.whl` is this repository's source, built. It
 is committed so the package can be installed, run and reviewed without reaching
-a package index.
+a package index, and therefore without an index account page being part of the
+install path. It is the only supported install route for this review copy.
 
 ```bash
 python -m pip install ./tools/track_certify-0.1.1-py3-none-any.whl
@@ -12,7 +13,7 @@ track-certify demo
 SHA-256:
 
 ```
-2ef5b74ec7f7d01126ac181e8ff53eb186bb35514f999cc4a718531085eb383a
+9d5be886fc6d0f667e411f923ddd16eb688da417aadec116a0541070b0935a54
 ```
 
 Python 3.9 or newer; the only runtime dependencies are NumPy and SciPy. The

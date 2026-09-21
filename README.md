@@ -4,14 +4,19 @@
 targets** — a certify-or-refuse layer for sequential causal experiments,
 with instance-optimal adaptive sampling.
 
+Anonymous review copy: <https://anonymous.4open.science/r/trackcertify-06B8/>
+
+Install the wheel bundled in this repository. Nothing is fetched from a
+package index, so no account page is involved in getting the code.
+
 ```bash
-pip install track-certify                                 # from the index
-pip install ./tools/track_certify-0.1.1-py3-none-any.whl  # from this repo
+python -m pip install ./tools/track_certify-0.1.1-py3-none-any.whl
+track-certify demo
 ```
 
-Pure Python; depends only on `numpy` and `scipy`. The second form installs the
-wheel bundled in `tools/`, so the package can be installed, run and reviewed
-without reaching a package index; `tools/README.md` records its SHA-256.
+Pure Python; the only runtime dependencies are NumPy and SciPy.
+`tools/README.md` records the wheel's SHA-256 and how to rebuild it byte for
+byte from this source.
 
 ## The problem it solves
 

@@ -35,7 +35,9 @@ dependencies = ["numpy>=1.22", "scipy>=1.8"]
 test = ["pytest>=7"]
 
 [project.urls]
-Homepage = "https://pypi.org/project/track-certify/"
+# Anonymous review mirror: files only, no commit history and no hosting
+# account. Replace with the permanent repository URL at camera-ready.
+Homepage = "https://anonymous.4open.science/r/trackcertify-06B8/"
 
 [project.scripts]
 track-certify = "track_certify.cli:main"
