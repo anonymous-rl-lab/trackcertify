@@ -5,10 +5,13 @@ targets** — a certify-or-refuse layer for sequential causal experiments,
 with instance-optimal adaptive sampling.
 
 ```bash
-pip install track-certify
+pip install track-certify                                 # from the index
+pip install ./tools/track_certify-0.1.1-py3-none-any.whl  # from this repo
 ```
 
-Pure Python; depends only on `numpy` and `scipy`.
+Pure Python; depends only on `numpy` and `scipy`. The second form installs the
+wheel bundled in `tools/`, so the package can be installed, run and reviewed
+without reaching a package index; `tools/README.md` records its SHA-256.
 
 ## The problem it solves
 
@@ -69,13 +72,15 @@ rep.active_kinds   # which wrong answers dominate: 'graph' / 'target' / 'coupled
 rep.budget(0.01)   # first-order sample estimate at delta = 0.01
 
 tax = tc.coupling_tax(model, ("X->Y", (0, 1)), (1.5, 1.2))
-tax.tax            # how much harder JOINT certification is than the harder
-                   # conditional problem — near the identifiability boundary
-                   # this diverges, and "estimate targets, then certify the
-                   # graph" becomes unboundedly suboptimal
+tax.tax            # kappa_total: how much harder JOINT certification is than
+                   # the harder conditional problem — near the identifiability
+                   # boundary this diverges, and "estimate targets, then
+                   # certify the graph" becomes unboundedly suboptimal.
+                   # The paper's coupling factor kappa_coup is the coupled
+                   # part alone; the two agree when kappa_alloc = 1.
 ```
 
-## Unknown covariance: certify or refuse, with explicit constants
+## Unknown covariance: refuse or proceed, with explicit constants
 
 ```python
 obs = collect_observational_samples()          # (n0, d), no interventions
@@ -86,17 +91,19 @@ try:
 except tc.Refusal as r:
     print("infeasible for this n0/delta/d/c_max:", r)   # pre-start refusal
 else:
-    cert = setup.certifier    # threshold already carries the certified
-                              # envelope inflation — nothing calibrated
+    cert = setup.certifier    # threshold already carries the envelope
+                              # inflation — nothing calibrated. This path
+                              # carries no validity theorem; see Scope.
 ```
 
 ## Benchmark instances with theorem-known difficulty
 
 ```python
 inst = tc.solvable_instance(r=0.9)      # closed-form T*, coupled alternative
-                                        # provably active (paper Prop. 3)
+                                        # active for r > 1/sqrt(2) (Prop. 1)
 inst = tc.scalable_instance(rs=[0.8, 0.9], cs=[1.0, 1.2])
-                                        # additive T*, 2^m graphs (Cor. 1)
+                                        # additive T*, 2^m graphs
+                                        # (supplement Cor. 1)
 res = tc.simulate(inst.model, inst.truth, inst.amplitudes, delta=1e-3,
                   rng=np.random.default_rng(0))
 res.tau, res.correct                    # compare against inst.tstar_closed_form
@@ -112,13 +119,19 @@ robust-mode feasibility from the command line.
   returned joint answer is wrong with probability at most `delta`, under
   arbitrary adaptive sampling and optional stopping (Gaussian mixture
   e-process + Ville's inequality; no union bound over hypotheses).
-* **Optimality.** Expected stopping time satisfies
+* **Optimality.** On identifiable states, with the default `adaptive`
+  allocator (restarted scale-free entropic FTRL, forced exploration,
+  cumulative C-tracking), expected stopping time satisfies
   `E[tau]/log(1/delta) -> T*` as `delta -> 0` — the change-of-measure lower
-  bound for *any* delta-correct procedure, attained.
-* **Estimated covariance.** With the split-sample envelope, validity is exact
-  whenever the envelope's computable feasibility conditions hold; otherwise
-  the workflow refuses before starting. Efficiency degrades by explicit,
-  measured constant factors.
+  bound for *any* delta-correct procedure, attained. No optimality is claimed
+  for any other allocator.
+* **Estimated covariance — no validity theorem.** `robust_certifier` applies
+  an explicit spectral envelope to the estimated covariance and refuses
+  before starting when its feasibility conditions fail. The paper assumes a
+  known common covariance throughout: its supplement lists the conditions an
+  anytime-valid extension would have to supply and states that none of them
+  is established there. Treat this path as a documented construction with an
+  explicit refusal gate, not as a certified one.
 * **Refusal semantics.** A reached cap or an infeasible envelope produces a
   refusal, never a certificate. There is no procedure here that converts
   arbitrary data into a certificate.
@@ -131,12 +144,39 @@ are refused by default (they make hypotheses mutually uncertifiable).
 
 ## Relation to the paper
 
-This package accompanies *Track-and-Certify: Anytime Joint Certification of
-Causal Graphs and Unknown Intervention Targets* (under review) and implements
-its method as stated. `tests/test_equivalence.py` proves trajectory
-equivalence (identical actions, decisions, stopping times, and counts)
-between the streaming `Certifier` and the underlying simulation driver over
-shared noise tapes, on five instances under two allocation policies.
+This package accompanies *Track-and-Certify: Joint Causal Identification under
+Unknown Intervention Semantics* (under review) and implements its method as
+stated. `docs/PAPER_MAP.md` maps each public entry point to the result it
+implements, and names the one that no result backs.
+
+`tests/test_equivalence.py` proves trajectory equivalence (identical actions,
+decisions, stopping times, and counts) between the streaming `Certifier` and
+the underlying simulation driver over shared noise tapes, on five instances
+under two allocation policies.
+
+## Scope
+
+The paper states its boundaries in its main text rather than in a footnote, and
+the package is meant to be read the same way. These are the ones that bear on
+using the code; the manuscript's Section XI has the full list.
+
+* `T*`, the active-value index and the three `kappa` ratios are functions of the
+  latent state, not data-free readouts. `characteristic_time` and
+  `coupling_tax` take the truth and the amplitudes as arguments, which a
+  deployment does not have. Their usable forms are a design-stage sensitivity
+  over a declared parameter set and a consistent online plug-in estimate,
+  neither of which carries a decision threshold.
+* Attainability is asymptotic in `delta` and is claimed for the default
+  `adaptive` allocator only. Nothing in the theory predicts, bounds or explains
+  the finite-`delta` advantage of one allocator over another.
+* Joint certification is not shown to dominate staged, estimate-then-certify
+  certification. The coupling tax says when the first-order cost of the joint
+  problem diverges; it is not a statement about a particular staged procedure
+  at a finite budget.
+* The estimated-covariance path carries no validity theorem, as above.
+* Nothing is claimed for stochastic off-target subsets, unrestricted graph
+  search, heterogeneous covariance, or multi-target interventions. `build_model`
+  refuses the classes it can check and says why.
 
 ## License
 

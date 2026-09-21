@@ -4,14 +4,18 @@ Two families from the accompanying paper in which membership, the
 characteristic time, and the active alternatives are theorems rather than
 linear-program outputs:
 
-* :func:`solvable_instance` -- the exactly solvable coupled-binding family
-  (paper Proposition 3): three nodes, two graphs, ``K = 2``, closed-form
-  ``T* = 2/c2^2 + 2/(c1^2 (1 - r^2))``, the coupled alternative provably
-  active at an interior optimum, and ``T*`` divergent as ``r -> 1``.
-* :func:`scalable_instance` -- the separable direct-sum family (paper
-  Corollary 1): ``m`` independent near-boundary pairs, ``2^m`` declared
-  graphs, ``K = m``, additive ``T* = sum_i 2/(c_i^2 (1 - r_i^2))``, all ``m``
-  single-pair coupled alternatives active.
+* :func:`solvable_instance` -- the exactly solvable coupled-binding family,
+  built on the two-variable construction with which the paper exhibits an
+  unbounded coupling tax (the family discussed under Proposition 1), plus an
+  independent third node and a second environment: three nodes, two graphs,
+  ``K = 2``, closed-form ``T* = 2/c2^2 + 2/(c1^2 (1 - r^2))``, the coupled
+  alternative active for ``r > 1/sqrt(2)`` by that proposition's dual-mass
+  equivalence, and ``T*`` divergent as ``r -> 1``.
+* :func:`scalable_instance` -- the separable direct-sum family (supplement
+  Corollary 1, multiple marginal tasks): ``m`` independent near-boundary
+  pairs, ``2^m`` declared graphs, ``K = m``, additive
+  ``T* = sum_i 2/(c_i^2 (1 - r_i^2))``, all ``m`` single-pair coupled
+  alternatives active.
 
 Both are ideal test problems: run any certification procedure on them and you
 can compare its stopping behavior against a difficulty that is known exactly.
@@ -56,7 +60,7 @@ class Instance:
 
 
 def solvable_instance(r: float, c1: float = 1.0, c2: float = 1.0) -> Instance:
-    """Exactly solvable coupled-binding instance (paper Proposition 3).
+    """Exactly solvable coupled-binding instance.
 
     Parameters: correlation ``r`` in ``(1/sqrt(2), 1)`` (the coupled
     alternative binds exactly in this range) and nonzero intervention
@@ -65,7 +69,7 @@ def solvable_instance(r: float, c1: float = 1.0, c2: float = 1.0) -> Instance:
     """
     if not _SQRT_HALF < r < 1.0:
         raise ValueError("r must lie in (1/sqrt(2), 1) for the coupled "
-                         "alternative to bind (paper Proposition 3)")
+                         "alternative to bind")
     if c1 == 0 or c2 == 0 or not np.isfinite([c1, c2]).all():
         raise ValueError("amplitudes must be nonzero and finite")
     sigma = np.array([[1.0, r, 0.0], [r, 1.0, 0.0], [0.0, 0.0, 1.0]])
@@ -90,7 +94,7 @@ def solvable_instance(r: float, c1: float = 1.0, c2: float = 1.0) -> Instance:
 
 def scalable_instance(rs: Sequence[float], cs: Sequence[float],
                       singles: int = 0) -> Instance:
-    """Separable direct-sum instance (paper Corollary 1).
+    """Separable direct-sum instance (supplement Corollary 1).
 
     ``m = len(rs)`` independent correlated pairs (each ``r_i`` in
     ``(1/sqrt(2), 1)``), ``singles`` isolated extra nodes, the ``2^m``

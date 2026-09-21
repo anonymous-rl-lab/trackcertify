@@ -44,4 +44,4 @@ __all__ = [
     "RobustSetup", "estimate_covariance", "robust_certifier",
     "simulate",
 ]
-__version__ = "0.1.0"
+__version__ = "0.1.1"

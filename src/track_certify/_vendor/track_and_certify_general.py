@@ -128,7 +128,8 @@ def run_general(
     if not 0 < delta < 1:
         raise ValueError("delta must lie in (0,1)")
 
-    # Estimated-covariance certification (Theorem 4) parameters:
+    # Estimated-covariance certification parameters (no validity theorem
+    # backs this mode; see track_certify.robust):
     #   truth_model  -- model generating the DATA (true covariance and rays);
     #                   decisions, rays, whitening, and statistics still come
     #                   from `model`. Defaults to `model` (well-specified case).

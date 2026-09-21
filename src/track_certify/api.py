@@ -13,10 +13,12 @@ decisions, stopping times, and per-environment counts.
 
 The certifier never receives the true hypothesis, the amplitudes, the
 characteristic time, or the optimal allocation.  Exhausting the predeclared
-cap is a refusal, not a low-confidence answer.  `certified_envelope`
-implements Corollary 2 of the paper: it either returns the explicit
-threshold-inflation constants for the estimated-covariance rule or refuses
-before any interventional data are drawn.
+cap is a refusal, not a low-confidence answer.  `certified_envelope` either
+returns the explicit threshold-inflation constants for the
+estimated-covariance rule or refuses before any interventional data are
+drawn; that rule is a construction of this package and is not covered by the
+paper's validity theorem, which assumes a known covariance (see
+`track_certify.robust`).
 """
 
 from __future__ import annotations
@@ -61,7 +63,9 @@ class StepOutcome:
 
 @dataclass(frozen=True)
 class Envelope:
-    """Corollary 2 certified error envelope and its threshold constants."""
+    """Spectral error envelope for an estimated covariance, and the
+    threshold constants it implies.  Not a paper-certified envelope; see
+    `track_certify.robust`."""
 
     eps: float
     eta_bar: float
@@ -72,7 +76,7 @@ class Envelope:
 
 
 class Refusal(Exception):
-    """Raised by pre-start feasibility checks (Corollary 2)."""
+    """Raised by pre-start feasibility checks."""
 
 
 def build_model(sigma: np.ndarray,
@@ -151,13 +155,17 @@ def build_model(sigma: np.ndarray,
 
 def certified_envelope(n0: int, delta: float, d: int, c_max: float,
                        gamma: float = 0.3) -> Envelope:
-    """Corollary 2 constants, or a pre-start `Refusal`.
+    """Estimated-covariance envelope constants, or a pre-start `Refusal`.
 
-    Matches theory/run_estimated_sigma.py: x = d log 9 + log(2/(delta/2)),
-    eps0 = 4(sqrt(x/n0) + x/n0); feasible iff eps0 < 1 and sqrt(d) eps <= 2/5;
-    eps = eps0/(1-eps0), eta_bar = c_max sqrt(d) eps; threshold constants
+    x = d log 9 + log(2/(delta/2)), eps0 = 4(sqrt(x/n0) + x/n0); feasible iff
+    eps0 < 1 and sqrt(d) eps <= 2/5; eps = eps0/(1-eps0),
+    eta_bar = c_max sqrt(d) eps; threshold constants
     beta_scale = (1+gamma)(1+eps), beta_drift = (1+1/gamma) eta_bar^2/2, run
     at level delta/2 with full-dimension penalty.
+
+    These constants are this package's own construction.  The paper proves
+    anytime validity for a known covariance only; see `track_certify.robust`
+    for what an extension would have to establish.
     """
     if not 0 < delta < 1:
         raise ValueError("delta must lie in (0,1)")

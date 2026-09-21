@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "track-certify"
-version = "0.1.0"
+version = "0.1.1"
 description = "Anytime joint certification of causal graphs and unknown intervention targets: certify-or-refuse sequential experiments with instance-optimal adaptive sampling"
 readme = "README.md"
 requires-python = ">=3.9"

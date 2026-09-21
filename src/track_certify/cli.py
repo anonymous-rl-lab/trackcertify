@@ -117,7 +117,7 @@ def main(argv=None) -> int:
     t.add_argument("--allow-indistinct", action="store_true")
     t.set_defaults(func=_cmd_tstar)
 
-    e = sub.add_parser("envelope", help="Corollary-2 certified envelope "
+    e = sub.add_parser("envelope", help="estimated-covariance envelope "
                                         "feasibility for (n0, delta, d, "
                                         "c_max)")
     e.add_argument("--n0", type=int, required=True)

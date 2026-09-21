@@ -158,10 +158,14 @@ def coupling_tax(model: FiniteRayModel, hypothesis: Hypothesis,
 
     The conditional times restrict the alternative set to one kind:
     graph-only (same targets, different graph), target-only (same graph,
-    different targets), and coupled (both change).  The tax divides the joint
-    ``T*`` by the larger of the two conditional times, matching the paper's
-    definition; entries are ``None`` when the class contains no alternative of
-    that kind.
+    different targets), and coupled (both change).  ``tax`` divides the joint
+    ``T*`` by the larger of the two conditional times, which is the paper's
+    total factor ``kappa_total``; it equals the paper's coupling factor
+    ``kappa_coup`` exactly when the allocation factor ``kappa_alloc`` is one,
+    as it is in the near-boundary family of :func:`solvable_instance`.  This
+    report does not compute the marginal game value, so it does not separate
+    the two factors.  Entries are ``None`` when the class contains no
+    alternative of that kind.
     """
     rows, kinds, _ = _divergences(model, hypothesis, amplitudes)
     joint = characteristic_time(model, hypothesis, amplitudes).tstar
